@@ -3,6 +3,9 @@
 /* assignment specific globals */
 const INPUT_TRIANGLES_URL = "https://ncsucgclass.github.io/prog4/triangles.json"; // triangles file loc
 const INPUT_ELLIPSOIDS_URL = "https://ncsucgclass.github.io/prog4/ellipsoids.json"; // ellipsoids file loc
+const BACKGROUND_URL = "https://ncsucgclass.github.io/prog4/sky.jpg";
+const NEW_BACKGROUND_URL = "https://hysilensj.github.io/prog4/stars.jpg";
+const NEW_INPUT_TRIANGLES_URL = "https://hysilensj.github.io/prog4/triangles.json"; // triangles file loc
 var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
@@ -298,11 +301,18 @@ function handleKeyDown(event) {
               toggleColor = true;
             }
             break;
+        case "Digit1":
+            if (event.getModifierState("Shift")) {
+                setupWebGL(1); // set up the webGL environment
+                loadModels(1); // load in the models from tri file
+                setupShaders(); // setup the webGL shaders
+                renderModels(); // draw the triangles using webGL
+            }
     } // end switch
 } // end handleKeyDown
 
 // set up the webGL environment
-function setupWebGL() {
+function setupWebGL(mode) {
     
     // Set up keys
     document.onkeydown = handleKeyDown; // call this when key pressed
@@ -313,7 +323,12 @@ function setupWebGL() {
       imageContext = imageCanvas.getContext("2d"); 
       var bkgdImage = new Image(); 
       bkgdImage.crossOrigin = "Anonymous";
-      bkgdImage.src = "https://ncsucgclass.github.io/prog3/sky.jpg";
+      if (mode != 1 ) {
+        bkgdImage.src = BACKGROUND_URL;
+      }
+      else {
+        bkgdImage.src = NEW_BACKGROUND_URL;
+      }
       bkgdImage.onload = function(){
           var iw = bkgdImage.width, ih = bkgdImage.height;
           imageContext.drawImage(bkgdImage,0,0,iw,ih,0,0,cw,ch);   
@@ -344,7 +359,7 @@ function setupWebGL() {
 } // end setupWebGL
 
 // read models in, load them into webgl buffers
-function loadModels() {
+function loadModels(mode) {
     
     // make an ellipsoid, with numLongSteps longitudes.
     // start with a sphere of radius 1 at origin
@@ -427,7 +442,13 @@ function loadModels() {
     } // end make ellipsoid
     */
     
-    inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
+    if (mode != 1) {
+      inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
+    }
+    else {
+      inputTriangles = getJSONFile(NEW_INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
+    }
+    
 
     try {
         if (inputTriangles == String.null)
@@ -807,7 +828,9 @@ function renderModels() {
         
     } // end for each triangle set
 
-    gl.depthMask(false);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.depthMask(true);
 
     // render each triangle set - non-opaque tris
     var currSet; // the tri set and its material properties
@@ -883,8 +906,8 @@ function renderModels() {
 
 function main() {
   
-  setupWebGL(); // set up the webGL environment
-  loadModels(); // load in the models from tri file
+  setupWebGL(0); // set up the webGL environment
+  loadModels(0); // load in the models from tri file
   setupShaders(); // setup the webGL shaders
   renderModels(); // draw the triangles using webGL
   
