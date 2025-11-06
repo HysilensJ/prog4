@@ -303,6 +303,7 @@ function handleKeyDown(event) {
             break;
         case "Digit1":
             if (event.getModifierState("Shift")) {
+                customTris = true;
                 setupWebGL(1); // set up the webGL environment
                 loadModels(1); // load in the models from tri file
                 setupShaders(); // setup the webGL shaders
